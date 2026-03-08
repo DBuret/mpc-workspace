@@ -25,7 +25,7 @@ impl AppState {
             .build()
             .expect("Failed to create reqwest client");
 	    
- 	let url = config.url;
+ 	let url = &config.url;
 	    
          Self {
 		url,

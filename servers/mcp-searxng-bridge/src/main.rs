@@ -70,7 +70,7 @@ impl McpServer for Agent {
                     let url = args.and_then(|a| a.get("url")?.as_str()).unwrap_or("");
                     fetch_url(&self.state, url).await
                 }
-            _ => Err(crate::error::AgentError::Api(format!("Unknown tool '{}'", name))),
+            _ => Err(crate::error::AgentError::Api(format!("Unknown tool '{}'", name)).to_string()),
         }
 	//match res {
          //       Ok(t) => json!({ "content": [{ "type": "text", "text": t }] }),
