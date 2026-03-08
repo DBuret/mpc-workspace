@@ -75,15 +75,18 @@ impl McpServer for Agent {
 #[tokio::main]
 async fn main() {
     // 1. 🚀 Configuration auto-magique
-    let config: AgentConfig = match envy::from_env() {
+    
+    let env_prefix = format!("{}_", env!("CARGO_PKG_NAME").to_uppercase().replace('-', "_"));
+    
+    let config: AgentConfig = match envy::prefixed(&env_prefix).from_env() {
         Ok(c) => c,
         Err(e) => {
             eprintln!("❌ Configuration failed: {}", e);
-            eprintln!("📋 Expected env vars prefixed with '{}'", 
-                      env!("CARGO_PKG_NAME").to_uppercase().replace('-', "_"));
+            eprintln!("📋 Expected env vars to be prefixed with '{}'", env_prefix);
             std::process::exit(1);
         }
     };
+    
 
     // 2. 📊 Logs configurés
     tracing_subscriber::fmt().with_env_filter(&config.log_level).init();
@@ -99,7 +102,7 @@ async fn main() {
     // 5. 🚀 Démarrage
     let addr = std::net::SocketAddr::from(([0, 0, 0, 0], config.port));
     info!("🚀 {} v{} started on {}", 
-          env!("CARGO_PKG_NAME"), 
+          env_prefix, 
           env!("CARGO_PKG_VERSION"), 
           addr);
 
