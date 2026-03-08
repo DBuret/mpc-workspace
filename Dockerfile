@@ -1,34 +1,42 @@
 # ==========================================
-# STAGE 1 : BUILDER COMMUN (Compile tout le workspace)
+# STAGE 1 : CARGO CHEF (Préparation du cache)
 # ==========================================
-FROM rust:1.85-slim AS builder
-
-RUN apt-get update && apt-get install -y \
-    musl-tools \
-    pkg-config \
-    libssl-dev \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
+# On utilise une image avec cargo-chef préinstallé
+FROM lukemathwalker/cargo-chef:latest-rust-1.85 AS chef
 WORKDIR /app
 
-# Cache des dépendances (optionnel mais recommandé pour la vitesse)
-COPY Cargo.toml Cargo.loc[k] ./
-# On crée des fichiers dummy pour tromper Cargo et mettre en cache les dépendances
-RUN mkdir -p core/mcp-network-core/src servers/mcp-searxng-bridge/src servers/template/src \
-    && echo "fn main() {}" > core/mcp-network-core/src/lib.rs \
-    && echo "fn main() {}" > servers/mcp-searxng-bridge/src/main.rs \
-    && echo "fn main() {}" > servers/template/src/main.rs \
-    && cargo build --release --target x86_64-unknown-linux-musl
-
-# Copie du vrai code et compilation de TOUS les binaires
+# On analyse l'ensemble du projet pour créer une "recette"
+FROM chef AS planner
 COPY . .
+# Chef trouve TOUS les Cargo.toml et crée un recipe.json
+RUN cargo chef prepare --recipe-path recipe.json
+
+# ==========================================
+# STAGE 2 : BUILDER (Mise en cache & Compilation)
+# ==========================================
+FROM chef AS builder
+
+# Nécessaire pour notre code (SSL, etc.)
+RUN apt-get update && apt-get install -y musl-tools pkg-config libssl-dev ca-certificates
+
+WORKDIR /app
+# On copie uniquement la recette générée
+COPY --from=planner /app/recipe.json recipe.json
+
+# CHEF MAGIC : Il crée l'arborescence dummy pour TOUS les serveurs
+# et compile les dépendances. Si un seul Cargo.toml change, il refait cette étape.
 RUN rustup target add x86_64-unknown-linux-musl \
-    && cargo build --release --target x86_64-unknown-linux-musl
+    && cargo chef cook --release --target x86_64-unknown-linux-musl --recipe-path recipe.json
+
+# MAINTENANT, on copie notre vrai code source complet
+COPY . .
+
+# On compile nos vrais binaires. Les dépendances sont déjà compilées !
+RUN cargo build --release --target x86_64-unknown-linux-musl
 
 
 # ==========================================
-# STAGE 2 : BASE RUNTIME (Tronc commun pour les images finales)
+# STAGE 3 : BASE RUNTIME
 # ==========================================
 FROM scratch AS base-runtime
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
@@ -41,11 +49,12 @@ LABEL org.opencontainers.image.licenses="MIT"
 WORKDIR /app
 USER 1000
 
-
 # ==========================================
-# STAGE 3A : AGENT SEARXNG_BRIDGE (Cible spécifique)
+# STAGE 4 : VOS AGENTS (Cibles)
 # ==========================================
 FROM base-runtime AS mcp-searxng-bridge
+
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/mcp-searxng-bridge /app/mcp-bridge
 
 # Labels OCI spécifiques à SearXNG
 LABEL org.opencontainers.image.title="MCP SearXNG Bridge"
@@ -59,17 +68,16 @@ ENV MCP_SEARXNG_BRIDGE_URL="http://172.17.0.1:18080"
 ENV MCP_SEARXNG_BRIDGE_PORT="3000"
 ENV MCP_SEARXNG_BRIDGE_LOG="info"
 
-# Copie exclusive de CE binaire
-COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/mcp-searxng-bridge /app/mcp-bridge
-
 EXPOSE 3000
 ENTRYPOINT ["./mcp-bridge"]
 
 
 # ==========================================
-# STAGE 3X : AGENT TEMPLATE / NOUVEL AGENT
+# STAGE 4x : AGENT TEMPLATE / NOUVEL AGENT
 # ==========================================
-#FROM base-runtime AS mcp-template-bridge
+#FROM base-runtime AS 
+#
+# COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/mcp-searxng-bridge /app/mcp-bridge
 #
 # Labels OCI spécifiques au Template
 #LABEL org.opencontainers.image.title="MCP Template Bridge"
@@ -84,5 +92,5 @@ ENTRYPOINT ["./mcp-bridge"]
 # Copie exclusive de CE binaire
 #COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/mcp-template-bridge /app/mcp-bridge
 
-#EXPOSE 3001
+#EXPOSE 3000
 #ENTRYPOINT ["./mcp-bridge"]
