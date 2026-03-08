@@ -36,9 +36,7 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 # Labels communs à tous les projets du workspace
 LABEL org.opencontainers.image.vendor="DBuret"
 LABEL org.opencontainers.image.authors="DBuret"
-LABEL org.opencontainers.image.url="https://github.com/DBuret/mcp-searxng-rs"
 LABEL org.opencontainers.image.licenses="MIT"
-LABEL com.paitrimony.mcp.protocol_version="2024-11-05"
 
 WORKDIR /app
 USER 1000
@@ -53,6 +51,7 @@ FROM base-runtime AS mcp-searxng-bridge
 LABEL org.opencontainers.image.title="MCP SearXNG Bridge"
 LABEL org.opencontainers.image.description="MCP server bridging AI agents to SearXNG with web scraping."
 LABEL org.opencontainers.image.documentation="https://github.com/DBuret/mcp-searxng-bridge/blob/main/README.adoc"
+LABEL org.opencontainers.image.url="https://github.com/DBuret/mcp-searxng-bridge
 LABEL com.paitrimony.mcp.tools="search,fetch_page"
 
 # ENV spécifiques à SearXNG
@@ -75,6 +74,7 @@ ENTRYPOINT ["./mcp-bridge"]
 # Labels OCI spécifiques au Template
 #LABEL org.opencontainers.image.title="MCP Template Bridge"
 #LABEL org.opencontainers.image.description="An example template for new MCP agents."
+#LABEL org.opencontainers.image.url="https://github.com/DBuret/mcp-searxng-bridge"
 #LABEL com.paitrimony.mcp.tools="hello_world"
 #
 # ENV spécifiques au Template
