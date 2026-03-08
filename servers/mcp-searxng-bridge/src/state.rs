@@ -6,7 +6,7 @@ use tokio::sync::broadcast;
 #[derive(Clone)]
 pub struct AppState {
     // TO DO: Ajoutez vos clients métier ici (ex: reqwest::Client, sqlx::PgPool)
-    pub custom_setting: String,
+    pub client: reqwest::Client,
     
     // Requis par le noyau réseau pour le mode SSE
     pub tx: broadcast::Sender<String>,
@@ -17,9 +17,16 @@ impl AppState {
     pub fn new(config: &AgentConfig, tx: broadcast::Sender<String>) -> Self {
         
         // TO DO: Initialisez vos clients asynchrones ici
-        
+        let client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(10))
+            .user_agent("MCP-SearXNG-Bridge/1.0")
+            .build()
+            .expect("Failed to create reqwest client");
+	    
+	    let url = config.url;
         Self {
-            custom_setting: "Valeur d'exemple".to_string(),
+		url,
+            client,
             tx,
         }
     }

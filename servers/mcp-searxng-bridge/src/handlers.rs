@@ -28,7 +28,7 @@ pub async fn call_searxng(state: &AppState, query: &str) -> Result<String, Agent
     let params = [("q", query), ("format", "json"), ("language", "en-US")];
     
     let resp = state.client
-        .get(&format!("{}/search", state.searxng_url))
+        .get(&format!("{}/search", state.url))
         .query(&params)
         .send()
         .await?;
