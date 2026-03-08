@@ -101,7 +101,9 @@ impl McpServer for Agent {
             }]
         });
 
-	return Json(McpResponse { jsonrpc: "2.0".into(), id: request_id, result }).into_response()
+        // Simply return the JSON payload as a string wrapped in Ok()
+        Ok(result.to_string())
+    
     }
     
 }
