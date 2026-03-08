@@ -4,18 +4,17 @@ mod config;
 mod error;
 mod handlers;
 mod state;
-use mcp_network_core::McpResponse;
 
-use mcp_network_core::{McpServer, create_mcp_router};
+
+use mcp_network_core::{McpServer, create_mcp_router, McpResponse};
 use serde_json::{Value, json};
 use std::sync::Arc;
 use tokio::sync::broadcast;
 use tracing::{info,warn, error};
 use axum::Json;  
 
-
 use crate::config::AgentConfig;
-//use crate::error::AgentError;
+use crate::error::AgentError;
 use crate::handlers::{generate_url};
 use crate::state::AppState;
 
@@ -68,7 +67,7 @@ impl McpServer for Agent {
         })
     }
 
-    /// TODO: this mcp server tools routing
+
     async fn call_tool(&self, name: &str, args: Option<&Value>) -> Result<String, String> {
         
         let source = args
@@ -93,7 +92,7 @@ impl McpServer for Agent {
         }
 
         // Generate Kroki URL
-        let url = generate_url(self.state.url, kroki_type, source);
+        let url = generate_url(&self.state.url, kroki_type, source);
         let result = json!({
             "content": [{
                 "type": "text",

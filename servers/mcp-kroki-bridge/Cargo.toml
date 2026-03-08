@@ -17,7 +17,7 @@ tokio.workspace = true
 thiserror.workspace = true
 
 # TO DO: Dépendances métier
-axum = { version = "0.8", features = ["macros"] }
+axum = { version = "0.7", features = ["macros"] }
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 flate2 = "1.0"
 base64 = "0.22"
