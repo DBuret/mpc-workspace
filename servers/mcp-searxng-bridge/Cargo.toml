@@ -1,10 +1,10 @@
 [package]
-name = "mcp-searxng- bridge"     # TO DO: Renommer
-version = "1.0.0"                # TO DO: Versionner
-edition = "2021"
+name = "mcp-searxng-bridge"     
+version = "1.0.0"                
+edition = "2024"
 
 [[bin]]
-name = "mcp-searxng- bridge"     # TO DO: Même nom
+name = "mcp-searxng-bridge"     
 path = "src/main.rs"
 
 [dependencies]
@@ -16,4 +16,8 @@ tracing.workspace = true
 tokio.workspace = true
 thiserror.workspace = true
 
-# TO DO: Dépendances métier
+
+[dependencies]
+// tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+html2md = "0.2" 
+scraper = "0.19" 
