@@ -1,7 +1,8 @@
-# --- Étape 1 : Build multi-agents ---
+# ==========================================
+# STAGE 1 : BUILDER COMMUN (Compile tout le workspace)
+# ==========================================
 FROM rust:1.85-slim AS builder
 
-# Installation des dépendances système
 RUN apt-get update && apt-get install -y \
     musl-tools \
     pkg-config \
@@ -11,59 +12,77 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copie des fichiers de workspace + lockfile
+# Cache des dépendances (optionnel mais recommandé pour la vitesse)
 COPY Cargo.toml Cargo.lock ./
-
-# Pré-build des dépendances (cache Docker)
-RUN mkdir -p core/mcp-network-core/src servers/mcp-searxng-bridge/src \
+# On crée des fichiers dummy pour tromper Cargo et mettre en cache les dépendances
+RUN mkdir -p core/mcp-network-core/src servers/mcp-searxng-bridge/src servers/template/src \
     && echo "fn main() {}" > core/mcp-network-core/src/lib.rs \
     && echo "fn main() {}" > servers/mcp-searxng-bridge/src/main.rs \
+    && echo "fn main() {}" > servers/template/src/main.rs \
     && cargo build --release --target x86_64-unknown-linux-musl
 
-# Copie du code source réel
+# Copie du vrai code et compilation de TOUS les binaires
 COPY . .
-
-# Build de TOUS les agents du workspace
 RUN rustup target add x86_64-unknown-linux-musl \
-    && cargo build --release --target x86_64-unknown-linux-musl \
-    && ls -la target/x86_64-unknown-linux-musl/release/
+    && cargo build --release --target x86_64-unknown-linux-musl
 
-# --- Étape 2 : Runtime final ---
-FROM scratch
 
-# --- LABEL OCI STANDARDS ---
-LABEL org.opencontainers.image.title="MCP SearXNG Rust Bridge"
-LABEL org.opencontainers.image.description="High-performance MCP server bridge connecting AI agents to SearXNG via SSE. Features web search and smart Markdown scraping."
-LABEL org.opencontainers.image.vendor="DBuret"
-LABEL org.opencontainers.image.authors="DBuret"
-
-LABEL org.opencontainers.image.url="https://github.com/DBuret/mcp-searxng-rs"
-LABEL org.opencontainers.image.source="https://github.com/DBuret/mcp-searxng-bridge"
-LABEL org.opencontainers.image.documentation="https://github.com/DBuret/mcp-searxng-bridge/blob/main/README.adoc"
-
-LABEL org.opencontainers.image.version="0.3.1"
-LABEL org.opencontainers.image.revision="7bae13f" 
-
-LABEL org.opencontainers.image.licenses="MIT"
-
-LABEL com.paitrimony.mcp.protocol_version="2024-11-05"
-LABEL com.paitrimony.mcp.transport="sse"
-LABEL com.paitrimony.mcp.tools="search,fetch_page"
-
-# Certificats SSL
+# ==========================================
+# STAGE 2 : BASE RUNTIME (Tronc commun pour les images finales)
+# ==========================================
+FROM scratch AS base-runtime
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-# === COPIE DYNAMIQUE DU BINAIRE SELON LE BUILD ARG ===
-ARG MCP_AGENT_NAME=mcp-searxng-bridge
-COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/${MCP_AGENT_NAME} /app/mcp-bridge
+# Labels communs à tous les projets du workspace
+LABEL org.opencontainers.image.vendor="DBuret"
+LABEL org.opencontainers.image.authors="DBuret"
+LABEL org.opencontainers.image.url="https://github.com/DBuret/mcp-searxng-rs"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL com.paitrimony.mcp.protocol_version="2024-11-05"
 
-# Variables d'environnement par défaut (spécifiques à SearXNG)
+WORKDIR /app
+USER 1000
+
+
+# ==========================================
+# STAGE 3A : AGENT SEARXNG (Cible spécifique)
+# ==========================================
+FROM base-runtime AS mcp-searxng-bridge
+
+# Labels OCI spécifiques à SearXNG
+LABEL org.opencontainers.image.title="MCP SearXNG Bridge"
+LABEL org.opencontainers.image.description="MCP server bridging AI agents to SearXNG with web scraping."
+LABEL org.opencontainers.image.documentation="https://github.com/DBuret/mcp-searxng-bridge/blob/main/README.adoc"
+LABEL com.paitrimony.mcp.tools="search,fetch_page"
+
+# ENV spécifiques à SearXNG
 ENV MCP_SX_URL="http://172.17.0.1:18080"
 ENV MCP_SX_PORT="3000"
 ENV MCP_SX_LOG="info"
 
-WORKDIR /app
-EXPOSE 3000
-USER 1000
+# Copie exclusive de CE binaire
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/mcp-searxng-bridge /app/mcp-bridge
 
+EXPOSE 3000
 ENTRYPOINT ["./mcp-bridge"]
+
+
+# ==========================================
+# STAGE 3X : AGENT TEMPLATE / NOUVEL AGENT
+# ==========================================
+#FROM base-runtime AS mcp-template-bridge
+#
+# Labels OCI spécifiques au Template
+#LABEL org.opencontainers.image.title="MCP Template Bridge"
+#LABEL org.opencontainers.image.description="An example template for new MCP agents."
+#LABEL com.paitrimony.mcp.tools="hello_world"
+#
+# ENV spécifiques au Template
+#ENV MCP_TEMPLATE_PORT="3001"
+#ENV MCP_TEMPLATE_LOG="info"
+
+# Copie exclusive de CE binaire
+#COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/mcp-template-bridge /app/mcp-bridge
+
+#EXPOSE 3001
+#ENTRYPOINT ["./mcp-bridge"]

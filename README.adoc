@@ -1,13 +1,82 @@
-Comment l’utiliser pour un nouveau projet ?
-
-cp -r servers/template servers/mcp-mon-agent
-cd servers/mcp-mon-agent
-sed -i 's/template-bridge/mon-agent/g' Cargo.toml
-
-# Éditez seulement config.rs et handlers.rs
-# Ajoutez dans workspace Cargo.toml
-
-
-cargo build --release
+= MCP worspace 
+:description: high-performance, minimal footprint, network-ready MCP servers sharing a common boilerplate
+:icons: font
+:toc: macro
+:toc-title: Table of Contents
+:imagesdir: images
+:sectnums: 
+:source-highlighter: highlight.js
 
 
+image:https://img.shields.io/badge/Rust-2024-orange.svg[Rust Version]
+image:https://img.shields.io/badge/License-MIT-blue.svg[License]
+
+[cols="2,10",frame=none]
+|===
+|image:logo-128.png[logo] 
+a|An implementation of the *Model Context Protocol (MCP)* for AI agents 
+
+Built with Rust for speed, reliability & minimal footprint.
+
+Unlike standard MCP servers using `stdio`, these MCP servers operate over the network:
+
+* *SSE (Server-Sent Events)* with a *Hybrid Response* mode, making it compatible with clients like LM Studio.
+* */mpc POST*, modern version o" the protocol, making it compatible with clients like open WebUI, AnythingLLM, ...
+|===
+
+toc::[]
+
+
+== Features
+
+
+* *Network-Ready*: Connect via SSE/HTTP or MCP Streaming; no local child-process management required.
+* *Workspace Architecture*: Scalable Rust monorepo design allowing multiple independent MCP agents to share the same reliable core networking stack without code duplication. Each mcp server code  focus on its business logic only
+* *Modern Rust*: Leveraging Edition 2024, the Axum/Tokio ecosystem,  strongly-typed environment configurations (envy), and tunable logging level (tracing).
+* *Docker Optimized*: Single multi-stage `Dockerfile` to build the entire workspace, resulting in tiny `FROM scratch` images (~5MB).
+
+
+
+== MCP Servers
+
+[cols="1,6"]
+|===
+
+| image:logo-128-calc.png[calc MCP] | link:servers/mcp-calc[mcp-calc] : A simple calculator using MCP to avoid LLM mistakes at basic arithmetic operations.
+| image:logo-128-kroki.png[kroki MCP] | link:servers/mcp-kroki-bridge[mcp-kroki-bridge] : A bridge to use Kroki
+| image:logo-128-pg.png[postgres MCP] | link:servers/mcp-postgres[mcp-postgres] : A bridge to use Postgres in my pAItrimony project
+| image:logo-128-search.png[search MCP] | link:servers/mcp-searxng-bridge[mcp-searxng-bridge] : A bridge to use searxng search engine & fetch web pages
+
+|===
+
+== Create a new server
+
+. cp -r servers/template servers/mcp-new
+. cd servers/mcp-new
+. sed -i 's/template-bridge/mpc-new/g' Cargo.toml
+. Edit config.rs (env vars),  handlers.rs (mcp tools), and Cargo.toml (additionnal crates needed by your business logic) 
+. add to workspace in root Cargo.toml
+. Dokerfile : add section for the new server (cut'n paste template section, edit)
+. cargo check
+. build
+
+[source,console]
+docker buildx build \
+  --build-arg MCP_AGENT_NAME=mcp-new \
+  -t dburet/mcp-new:latest \
+  --platform linux/amd64,linux/arm64 \
+  --push .
+
+
+== License
+
+MIT License. See `LICENSE` for details. *Note:* Mentioning the author in credits is required for any redistribution.
+
+== AI assistance disclosure
+
+This project includes AI-assisted code and documentation.
+The maintainer reviews and tests changes, however the software is provided "as is" and may contain errors.
+Use at your own risk; validate in your environment before production use.
+
+---
+Created by DBuret. Part of the https://gitlab.com/dburet/pAItrimony[pAItrimony] services suite.
