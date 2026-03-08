@@ -11,11 +11,11 @@ pub struct AgentConfig {
     pub port: u16,
     
     /// Le niveau de log 
-    #[serde(default = "default_log'")]
+    #[serde(default = "default_log")]
     pub log: String,
     
     // searxng url
-    #[serde(default = "default_url'")]
+    #[serde(default = "default_url")]
     pub url: String,
     
 }
