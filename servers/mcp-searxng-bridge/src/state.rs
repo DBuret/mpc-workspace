@@ -10,6 +10,7 @@ pub struct AppState {
     
     // Requis par le noyau réseau pour le mode SSE
     pub tx: broadcast::Sender<String>,
+    pub url: String;
 }
 
 impl AppState {
