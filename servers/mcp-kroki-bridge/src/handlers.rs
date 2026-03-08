@@ -1,10 +1,10 @@
-use crate::state::AppState;
 use crate::error::AgentError;
+use crate::state::AppState;
 use base64::{Engine as _, engine::general_purpose::URL_SAFE};
 use flate2::Compression;
 use flate2::write::ZlibEncoder;
 use std::io::Write;
-use tracing::{debug};
+use tracing::debug;
 
 pub fn generate_url(base_url: &str, kroki_type: &str, source: &str) -> String {
     // 1. Compression Zlib (indispensable pour matcher ton test Python/Bash)
@@ -28,5 +28,3 @@ pub fn generate_url(base_url: &str, kroki_type: &str, source: &str) -> String {
 
     final_url
 }
-
-

@@ -5,17 +5,16 @@ mod error;
 mod handlers;
 mod state;
 
-
-use mcp_network_core::{McpServer, create_mcp_router, McpResponse};
+use axum::Json;
+use mcp_network_core::{McpResponse, McpServer, create_mcp_router};
 use serde_json::{Value, json};
 use std::sync::Arc;
 use tokio::sync::broadcast;
-use tracing::{info,warn, error};
-use axum::Json;  
+use tracing::{error, info, warn};
 
 use crate::config::AgentConfig;
 use crate::error::AgentError;
-use crate::handlers::{generate_url};
+use crate::handlers::generate_url;
 use crate::state::AppState;
 use axum::response::IntoResponse;
 
@@ -29,8 +28,8 @@ pub struct Agent {
 impl McpServer for Agent {
     /// 📋 Auto-généré depuis Cargo.toml
     fn server_info(&self) -> Value {
-        json!({ 
-            "name": env!("CARGO_PKG_NAME"), 
+        json!({
+            "name": env!("CARGO_PKG_NAME"),
             "version": env!("CARGO_PKG_VERSION")
         })
     }
@@ -68,9 +67,7 @@ impl McpServer for Agent {
         })
     }
 
-
     async fn call_tool(&self, name: &str, args: Option<&Value>) -> Result<String, String> {
-        
         let source = args
             .and_then(|a| a.get("source"))
             .and_then(|v| v.as_str())
@@ -81,14 +78,14 @@ impl McpServer for Agent {
         let kroki_type = match name {
             "render_plantuml" => "plantuml",
             "render_vega" => "vegalite",
-            _ => return Err(format!("Unknown tool '{}'", name))
+            _ => return Err(format!("Unknown tool '{}'", name)),
         };
 
         // Vega-Lite validation
         if kroki_type == "vegalite" {
-            if let Err(e) = serde_json::from_str::<serde_json::Value>(source) {      
+            if let Err(e) = serde_json::from_str::<serde_json::Value>(source) {
                 warn!("render_vega error: {}", e);
-                return Err(format!("Invalid Vega-Lite JSON: {}", e))
+                return Err(format!("Invalid Vega-Lite JSON: {}", e));
             }
         }
 
@@ -103,9 +100,7 @@ impl McpServer for Agent {
 
         // Simply return the JSON payload as a string wrapped in Ok()
         Ok(result.to_string())
-    
     }
-    
 }
 
 /// Point d'entrée principal
@@ -151,7 +146,7 @@ async fn main() {
         addr
     );
 
-match tokio::net::TcpListener::bind(&addr).await {
+    match tokio::net::TcpListener::bind(&addr).await {
         Ok(listener) => {
             if let Err(e) = axum::serve(listener, app).await {
                 error!("❌ Erreur fatale du serveur: {}", e);

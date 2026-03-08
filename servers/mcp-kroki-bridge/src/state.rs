@@ -1,7 +1,7 @@
 use crate::config::AgentConfig;
 use tokio::sync::broadcast;
 
-/// L'état métier de votre serveur. C'est ici que vous stockez vos pools 
+/// L'état métier de votre serveur. C'est ici que vous stockez vos pools
 /// de base de données, vos clients HTTP, ou vos caches.
 #[derive(Clone)]
 pub struct AppState {
@@ -17,16 +17,15 @@ pub struct AppState {
 impl AppState {
     /// Construit l'état à partir de la configuration environnementale
     pub fn new(config: &AgentConfig, tx: broadcast::Sender<String>) -> Self {
-        
         // TO DO: Initialisez vos clients asynchrones ici
         //
         // let client = ...
         let url = config.url.clone();
-        
+
         Self {
             // custom_setting,
             // client,
-            url, 
+            url,
             tx,
         }
     }

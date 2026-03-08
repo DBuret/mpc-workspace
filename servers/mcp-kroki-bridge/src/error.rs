@@ -1,6 +1,6 @@
-use thiserror::Error;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
+use thiserror::Error;
 
 /// TODO: Définissez ici les erreurs métiers propres à cet agent.
 /// Elles seront converties en messages d'erreur formatés pour l'IA.
@@ -8,7 +8,7 @@ use axum::response::{IntoResponse, Response};
 pub enum AgentError {
     #[error("API request failed: {0}")]
     ApiError(String),
-    
+
     #[error("Validation error: {0}")]
     ValidationError(String),
 }
