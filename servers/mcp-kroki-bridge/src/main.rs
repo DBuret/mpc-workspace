@@ -11,7 +11,7 @@ use serde_json::{Value, json};
 use std::sync::Arc;
 use tokio::sync::broadcast;
 use tracing::{info,warn, error};
-use axum::Json; .
+use axum::Json;  
 
 
 use crate::config::AgentConfig;
@@ -93,7 +93,7 @@ impl McpServer for Agent {
         }
 
         // Generate Kroki URL
-        let url = generate_url(state.url, kroki_type, source);
+        let url = generate_url(self.state.url, kroki_type, source);
         let result = json!({
             "content": [{
                 "type": "text",
