@@ -86,7 +86,7 @@ impl McpServer for Agent {
         if kroki_type == "vegalite" {
             if let Err(e) = serde_json::from_str::<serde_json::Value>(source) {      
                 warn!("render_vega error: {}", e);
-                return Err(format!("Invalid Vega-Lite JSON: {}", e)), 
+                return Err(format!("Invalid Vega-Lite JSON: {}", e))
             }
         }
 
@@ -99,11 +99,11 @@ impl McpServer for Agent {
             }]
         });
 
-	Json(McpResponse { jsonrpc: "2.0".into(), id: request_id, result }).into_response();
+	return Json(McpResponse { jsonrpc: "2.0".into(), id: request_id, result }).into_response()
     }
 
     // Default error for unsupported methods
-    Err(format!("Unknown tool '{}'", name)), 
+    Err(format!("Unknown tool '{}'", name)),
     
 }
 
