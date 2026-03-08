@@ -104,7 +104,7 @@ impl McpServer for Agent {
 
     // Default error for unsupported methods
     Err(format!("Unknown tool '{}'", name)), 
-    }
+    
 }
 
 /// Point d'entrée principal
