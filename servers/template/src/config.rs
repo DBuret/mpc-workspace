@@ -10,8 +10,8 @@ pub struct AgentConfig {
     pub port: u16,
     
     /// do not edit
-    #[serde(default = "default_log_level")]
-    pub log_level: String,
+    #[serde(default = "default_log")]
+    pub log: String,
     
     // TO DO: edit your env vars
     
@@ -32,7 +32,7 @@ fn default_port() -> u16 {
     3000 
 }
 
-fn default_log_level() -> String {
+fn default_log() -> String {
     "info".into()
 }
 

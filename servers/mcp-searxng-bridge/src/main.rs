@@ -89,7 +89,7 @@ async fn main() {
     
 
     // 2. 📊 Logs configurés
-    tracing_subscriber::fmt().with_env_filter(&config.log_level).init();
+    tracing_subscriber::fmt().with_env_filter(&config.log).init();
 
     // 3. 🔄 État partagé
     let (tx, _) = broadcast::channel(100);

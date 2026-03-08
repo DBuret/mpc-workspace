@@ -43,7 +43,7 @@ USER 1000
 
 
 # ==========================================
-# STAGE 3A : AGENT SEARXNG (Cible spécifique)
+# STAGE 3A : AGENT SEARXNG_BRIDGE (Cible spécifique)
 # ==========================================
 FROM base-runtime AS mcp-searxng-bridge
 
@@ -51,13 +51,13 @@ FROM base-runtime AS mcp-searxng-bridge
 LABEL org.opencontainers.image.title="MCP SearXNG Bridge"
 LABEL org.opencontainers.image.description="MCP server bridging AI agents to SearXNG with web scraping."
 LABEL org.opencontainers.image.documentation="https://github.com/DBuret/mcp-searxng-bridge/blob/main/README.adoc"
-LABEL org.opencontainers.image.url="https://github.com/DBuret/mcp-searxng-bridge
+LABEL org.opencontainers.image.url="https://github.com/DBuret/mcp-searxng-bridge"
 LABEL com.paitrimony.mcp.tools="search,fetch_page"
 
 # ENV spécifiques à SearXNG
-ENV MCP_SX_URL="http://172.17.0.1:18080"
-ENV MCP_SX_PORT="3000"
-ENV MCP_SX_LOG="info"
+ENV MCP_SEARXNG_BRIDGE_URL="http://172.17.0.1:18080"
+ENV MCP_SEARXNG_BRIDGE_PORT="3000"
+ENV MCP_SEARXNG_BRIDGE_LOG="info"
 
 # Copie exclusive de CE binaire
 COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/mcp-searxng-bridge /app/mcp-bridge
