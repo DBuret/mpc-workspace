@@ -4,25 +4,36 @@ use serde::Deserialize;
 /// Serde et Envy vont chercher les clés en majuscules correspondantes (ex: MCP_TPL_URL).
 #[derive(Deserialize, Debug, Clone)]
 pub struct AgentConfig {
-    // TO DO: Définissez vos variables d'environnement ici
     
-    /// Exemple : MCP_TPL_API_KEY
-    // pub mcp_tpl_api_key: String,
-
-    /// Le port d'écoute (MCP_TPL_PORT)
+    /// do not edit: listening port 
     #[serde(default = "default_port")]
     pub port: u16,
     
-    /// Le niveau de log (MCP_TPL_LOG)
+    /// do not edit
     #[serde(default = "default_log_level")]
     pub log_level: String,
+    
+    // TO DO: edit your env vars
+    
+    /// Exemple : MCP_TPL_API_KEY
+    // pub mcp_tpl_api_key: String,
+    
+    // Une variable optionnelle (ex: MCP_TEMPLATE_BRIDGE_API_KEY)
+    // Si la variable n'est pas définie, api_key vaudra `None`.
+    // pub api_key: Option<String>,
+    
+    // Vous pouvez aussi avoir des types numériques optionnels
+    // (ex: MCP_TEMPLATE_BRIDGE_TIMEOUT)
+    // pub timeout_seconds: Option<u32>,
 }
 
-// TO DO: Fonctions pour les valeurs par défaut
+
 fn default_port() -> u16 {
-    3000 // Changez le port par défaut si vous lancez plusieurs agents en même temps
+    3000 
 }
 
 fn default_log_level() -> String {
     "info".into()
 }
+
+// TO DO: Functions to set default values
