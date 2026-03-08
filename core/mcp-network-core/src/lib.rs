@@ -44,10 +44,10 @@ pub struct McpResponse {
 pub trait McpServer: Send + Sync + 'static {
     /// Informations retournées lors de la phase d'initialisation
     fn server_info(&self) -> Value;
-    
+
     /// Liste des outils disponibles (retourne la structure JSON complète)
     async fn list_tools(&self) -> Value;
-    
+
     /// Exécute un outil en fonction de son nom et de ses arguments
     async fn call_tool(&self, name: &str, args: Option<&Value>) -> Result<String, String>;
 }
@@ -78,10 +78,7 @@ where
     Router::new()
         .route("/health", get(|| async { "OK" }))
         // LMStudio exige le POST sur /sse pour l'initialisation (Mode Hybride)
-        .route(
-            "/sse",
-            get(sse_handler::<S>).post(messages_handler::<S>),
-        )
+        .route("/sse", get(sse_handler::<S>).post(messages_handler::<S>))
         // Transport SSE standard
         .route("/messages", post(messages_handler::<S>))
         // Transport HTTP direct (ex: Open WebUI)
@@ -100,7 +97,7 @@ async fn sse_handler<S>(
 ) -> Sse<impl Stream<Item = Result<Event, std::convert::Infallible>>> {
     info!("New SSE connection requested");
     let rx = state.tx.subscribe();
-    
+
     let stream = stream::unfold(rx, |mut rx| async move {
         match rx.recv().await {
             Ok(msg) => Some((Ok(Event::default().data(msg)), rx)),
@@ -128,19 +125,19 @@ where
     // Cela évite d'attendre l'ouverture du tunnel SSE qui arrive souvent trop tard.
     if method == "initialize" {
         info!("Handling 'initialize' via direct HTTP response (Hybrid mode)");
-        
+
         let result = json!({
             "protocolVersion": "2024-11-05",
             "capabilities": { "tools": { "listChanged": false } },
             "serverInfo": state.server.server_info()
         });
-        
+
         let response = McpResponse {
             jsonrpc: "2.0".into(),
             id: request_id,
             result,
         };
-        
+
         return (StatusCode::OK, Json(response)).into_response();
     }
 
@@ -224,7 +221,7 @@ where
             "capabilities": { "tools": { "listChanged": false } },
             "serverInfo": state.server.server_info()
         });
-        
+
         return Json(McpResponse {
             jsonrpc: "2.0".into(),
             id: request_id,
@@ -236,7 +233,7 @@ where
     // 2. Routage des méthodes
     let result = match method {
         "tools/list" => state.server.list_tools().await,
-        
+
         "tools/call" => {
             let name = payload
                 .params

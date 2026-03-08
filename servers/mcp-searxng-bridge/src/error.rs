@@ -1,12 +1,12 @@
-use thiserror::Error;
-use axum::response::{IntoResponse, Response};
 use axum::http::StatusCode;
+use axum::response::{IntoResponse, Response};
+use thiserror::Error;
 
 /// TODO: Définissez ici les erreurs métiers propres à cet agent.
 /// Elles seront converties en messages d'erreur formatés pour l'IA.
 #[derive(Error, Debug)]
 pub enum AgentError {
-	#[error("Network error: {0}")]
+    #[error("Network error: {0}")]
     Network(#[from] reqwest::Error),
     #[error("Backend API error: {0}")]
     Api(String),

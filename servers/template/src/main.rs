@@ -1,4 +1,3 @@
-#![warn(missing_docs)]
 #![deny(unsafe_code)]
 
 mod config;
@@ -6,15 +5,15 @@ mod error;
 mod handlers;
 mod state;
 
-use mcp_network_core::{create_mcp_router, McpServer};
-use serde_json::{json, Value};
+use mcp_network_core::{McpServer, create_mcp_router};
+use serde_json::{Value, json};
 use std::sync::Arc;
 use tokio::sync::broadcast;
-use tracing::info;
+use tracing::{info,error};
 
 use crate::config::AgentConfig;
-use crate::error::AgentError;
-use crate::handlers::execute_tool_example;
+//use crate::error::AgentError;
+use crate::handlers::{call_searxng, fetch_url};
 use crate::state::AppState;
 
 /// Agent générique qui implémente le protocole MCP
@@ -75,9 +74,12 @@ impl McpServer for Agent {
 #[tokio::main]
 async fn main() {
     // 1. 🚀 Configuration auto-magique
-    
-    let env_prefix = format!("{}_", env!("CARGO_PKG_NAME").to_uppercase().replace('-', "_"));
-    
+
+    let env_prefix = format!(
+        "{}_",
+        env!("CARGO_PKG_NAME").to_uppercase().replace('-', "_")
+    );
+
     let config: AgentConfig = match envy::prefixed(&env_prefix).from_env() {
         Ok(c) => c,
         Err(e) => {
@@ -86,26 +88,39 @@ async fn main() {
             std::process::exit(1);
         }
     };
-    
 
     // 2. 📊 Logs configurés
-    tracing_subscriber::fmt().with_env_filter(&config.log).init();
+    tracing_subscriber::fmt()
+        .with_env_filter(&config.log)
+        .init();
+
+    info!(config = ?config, "🚀 Configuration chargée avec succès");
 
     // 3. 🔄 État partagé
     let (tx, _) = broadcast::channel(100);
     let state = Arc::new(AppState::new(&config, tx.clone()));
-    
+
     // 4. 🌐 Routeur MCP
     let agent = Agent { state };
     let app = create_mcp_router(agent, tx);
 
     // 5. 🚀 Démarrage
     let addr = std::net::SocketAddr::from(([0, 0, 0, 0], config.port));
-    info!("🚀 {} v{} started on {}", 
-          env_prefix, 
-          env!("CARGO_PKG_VERSION"), 
-          addr);
+    info!(
+        "🚀 {} v{} started on {}",
+        env_prefix,
+        env!("CARGO_PKG_VERSION"),
+        addr
+    );
 
-    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+match tokio::net::TcpListener::bind(&addr).await {
+        Ok(listener) => {
+            if let Err(e) = axum::serve(listener, app).await {
+                error!("❌ Erreur fatale du serveur: {}", e);
+            }
+        }
+        Err(e) => {
+            error!("❌ Impossible de lier le port {}: {}", config.port, e);
+        }
+    }
 }

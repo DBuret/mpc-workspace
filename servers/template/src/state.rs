@@ -6,8 +6,10 @@ use tokio::sync::broadcast;
 #[derive(Clone)]
 pub struct AppState {
     // TO DO: Ajoutez vos clients métier ici (ex: reqwest::Client, sqlx::PgPool)
-    pub custom_setting: String,
-    
+    // pub custom_setting: String,
+    // pub client: reqwest::Client,
+    // pub url: String,
+
     // Requis par le noyau réseau pour le mode SSE
     pub tx: broadcast::Sender<String>,
 }
@@ -17,9 +19,14 @@ impl AppState {
     pub fn new(config: &AgentConfig, tx: broadcast::Sender<String>) -> Self {
         
         // TO DO: Initialisez vos clients asynchrones ici
+        //
+        // let client = ...
+        // let url = ...
         
         Self {
-            custom_setting: "Valeur d'exemple".to_string(),
+            // custom_setting,
+            // client,
+            // url, 
             tx,
         }
     }

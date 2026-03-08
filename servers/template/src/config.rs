@@ -5,12 +5,8 @@ use serde::Deserialize;
 #[derive(Deserialize, Debug, Clone)]
 pub struct AgentConfig {
     
-    /// do not edit: listening port 
-    #[serde(default = "default_port")]
+    /// do not edit: listening port , log level
     pub port: u16,
-    
-    /// do not edit
-    #[serde(default = "default_log")]
     pub log: String,
     
     // TO DO: edit your env vars
@@ -28,12 +24,3 @@ pub struct AgentConfig {
 }
 
 
-fn default_port() -> u16 {
-    3000 
-}
-
-fn default_log() -> String {
-    "info".into()
-}
-
-// TO DO: Functions to set default values

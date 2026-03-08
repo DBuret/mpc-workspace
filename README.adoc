@@ -61,7 +61,12 @@ toc::[]
 . build
 
 [source,console]
-docker buildx build   --target mcp-searxng-bridge   -t davidburet/mcp-searxng-bridge:latest   --platform linux/amd64   --push .
+docker buildx build  \
+    --target mcp-searxng-bridge \
+    -t davidburet/mcp-searxng-bridge:latest \
+    --platform linux/amd64 \
+    --push \
+    .
 
 == License
 

@@ -64,9 +64,9 @@ LABEL org.opencontainers.image.url="https://github.com/DBuret/mcp-searxng-bridge
 LABEL com.paitrimony.mcp.tools="search,fetch_page"
 
 # ENV spécifiques à SearXNG
-ENV MCP_SEARXNG_BRIDGE_URL="http://172.17.0.1:18080"
+ENV MCP_SEARXNG_BRIDGE_URL="http://172.17.0.1:666"
 ENV MCP_SEARXNG_BRIDGE_PORT="3000"
-ENV MCP_SEARXNG_BRIDGE_LOG="info"
+ENV MCP_SEARXNG_BRIDGE_LOG="debug"
 
 EXPOSE 3000
 ENTRYPOINT ["./mcp-bridge"]

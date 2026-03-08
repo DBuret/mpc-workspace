@@ -10,3 +10,9 @@ pub enum AgentError {
     #[error("Validation error: {0}")]
     ValidationError(String),
 }
+
+impl IntoResponse for AgentError {
+    fn into_response(self) -> Response {
+        (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()).into_response()
+    }
+}
