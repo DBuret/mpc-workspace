@@ -17,6 +17,7 @@ use crate::config::AgentConfig;
 use crate::error::AgentError;
 use crate::handlers::{generate_url};
 use crate::state::AppState;
+use axum::response::IntoResponse;
 
 /// Agent générique qui implémente le protocole MCP
 #[derive(Clone)]
