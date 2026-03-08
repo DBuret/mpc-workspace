@@ -1,15 +1,16 @@
 use serde::Deserialize;
 
 /// Configuration chargée automatiquement depuis les variables d'environnement.
-/// Serde et Envy vont chercher les clés en majuscules correspondantes (ex: MCP_TPL_URL).
+/// Serde et Envy vont chercher les clés en majuscules correspondantes 
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct AgentConfig {
 	
-    /// Le port d'écoute (MCP_TPL_PORT)
+    /// Le port d'écoute
     #[serde(default = "default_port")]
     pub port: u16,
     
-    /// Le niveau de log (MCP_TPL_LOG)
+    /// Le niveau de log 
     #[serde(default = "default_log")]
     pub log: String,
     
