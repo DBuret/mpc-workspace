@@ -14,7 +14,7 @@ use tracing::info;
 
 use crate::config::AgentConfig;
 use crate::error::AgentError;
-use crate::handlers::execute_tool_example;
+use crate::handlers::{call_searxng, fetch_url};
 use crate::state::AppState;
 
 /// Agent générique qui implémente le protocole MCP
@@ -33,41 +33,51 @@ impl McpServer for Agent {
         })
     }
 
-    /// TODO: this mcp server tools description
+    
     async fn list_tools(&self) -> Value {
         json!({
-            "tools": [
-                {
-                    "name": "example_tool",
-                    "description": "Outil de template à remplacer",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": { 
-                            "input": { "type": "string", "description": "Paramètre d'entrée" }
-                        },
-                        "required": ["input"]
-                    }
+		  "tools": [
+            {
+                "name": "search",
+                "description": "Search the web via SearXNG",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": { "query": { "type": "string" } },
+                    "required": ["query"]
                 }
-                // TO DO: Ajoutez vos outils réels ici
-            ]
+            },
+            {
+                "name": "fetch_page",
+                "description": "Get the content of a web page as Markdown",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": { "url": { "type": "string" } },
+                    "required": ["url"]
+                }
+            }
+        ]
         })
     }
 
     /// TODO: this mcp server tools routing
     async fn call_tool(&self, name: &str, args: Option<&Value>) -> Result<String, String> {
         match name {
-            "example_tool" => {
-                let input = args
-                    .and_then(|a| a.get("input")?.as_str())
-                    .unwrap_or("default");
-                
-                execute_tool_example(&self.state, input)
-                    .await
-                    .map_err(|e| e.to_string())
-            }
-            // TO DO: Ajoutez vos routes d'outils ici
-            _ => Err(format!("Unknown tool '{}'", name)),
+                "search" => {
+                    let input = args.and_then(|a| a.get("query")?.as_str()).unwrap_or("");
+                    call_searxng(&self.state, input).await
+                }
+                "fetch_page" => {
+                    let url = args.and_then(|a| a.get("url")?.as_str()).unwrap_or("");
+                    fetch_url(&state, url).await
+                }
+            _ => Err(crate::error::AgentError::Api(format!("Unknown tool '{}'", name)),
         }
+	//match res {
+         //       Ok(t) => json!({ "content": [{ "type": "text", "text": t }] }),
+         //       Err(e) => json_error(&e.to_string()),
+        //    }
+	    
+	    //
     }
 }
 
