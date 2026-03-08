@@ -45,12 +45,14 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 LABEL org.opencontainers.image.vendor="DBuret"
 LABEL org.opencontainers.image.authors="DBuret"
 LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.documentation="https://github.com/DBuret/mcp-workspace/blob/main/README.adoc"
+LABEL org.opencontainers.image.url="https://github.com/DBuret/mcp-workspace"
 
 WORKDIR /app
 USER 1000
 
 # ==========================================
-# STAGE 4 : VOS AGENTS (Cibles)
+# STAGE 4a : mcp-searxng-bridge
 # ==========================================
 FROM base-runtime AS mcp-searxng-bridge
 
@@ -58,15 +60,34 @@ COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/mcp-searxng-br
 
 # Labels OCI spécifiques à SearXNG
 LABEL org.opencontainers.image.title="MCP SearXNG Bridge"
-LABEL org.opencontainers.image.description="MCP server bridging AI agents to SearXNG with web scraping."
-LABEL org.opencontainers.image.documentation="https://github.com/DBuret/mcp-searxng-bridge/blob/main/README.adoc"
-LABEL org.opencontainers.image.url="https://github.com/DBuret/mcp-searxng-bridge"
+LABEL org.opencontainers.image.description="MCP server bridging AI agents to SearXNG with web scraping.
 LABEL com.paitrimony.mcp.tools="search,fetch_page"
 
 # ENV spécifiques à SearXNG
 ENV MCP_SEARXNG_BRIDGE_URL="http://172.17.0.1:666"
 ENV MCP_SEARXNG_BRIDGE_PORT="3000"
 ENV MCP_SEARXNG_BRIDGE_LOG="debug"
+
+EXPOSE 3000
+ENTRYPOINT ["./mcp-bridge"]
+
+
+# ==========================================
+# STAGE 4b : mcp-kroki-bridge
+# ==========================================
+FROM base-runtime AS mcp-kroki-bridge
+
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/mcp-kroki-bridge /app/mcp-bridge
+
+# Labels OCI spécifiques à SearXNG
+LABEL org.opencontainers.image.title="MCP Kroki Bridge"
+LABEL org.opencontainers.image.description="MCP server bridging AI agents to kroki to generate diagrams"
+LABEL com.paitrimony.mcp.tools="render_vega,render_plantuml"
+
+# ENV spécifiques à kroki
+ENV MCP_KROKI_BRIDGE_URL="http://172.17.0.1:666"
+ENV MCP_KROKI_BRIDGE_PORT="3000"
+ENV MCP_KROKI_BRIDGE_LOG="debug"
 
 EXPOSE 3000
 ENTRYPOINT ["./mcp-bridge"]
