@@ -1,0 +1,19 @@
+[package]
+name = "mcp-searxng- bridge"     # TO DO: Renommer
+version = "1.0.0"                # TO DO: Versionner
+edition = "2021"
+
+[[bin]]
+name = "mcp-searxng- bridge"     # TO DO: Même nom
+path = "src/main.rs"
+
+[dependencies]
+mcp-network-core = { path = "../../core/mcp-network-core" }
+serde.workspace = true
+serde_json.workspace = true
+envy.workspace = true
+tracing.workspace = true
+tokio.workspace = true
+thiserror.workspace = true
+
+# TO DO: Dépendances métier

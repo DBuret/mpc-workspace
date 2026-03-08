@@ -1,0 +1,148 @@
+= MCP SearXNG Rust Bridge
+:description: A high-performance, network-ready MCP server bridge for SearXNG with web scraping capabilities.
+:icons: font
+:toc: macro
+:toc-title: Table of Contents
+:imagesdir: images
+:sectnums: 
+:source-highlighter: highlight.js
+
+image:https://img.shields.io/docker/v/davidburet/mcp-searxng-bridge[Version]
+image:https://img.shields.io/docker/image-size/davidburet/mcp-searxng-bridge/latest[Size]
+image:https://img.shields.io/badge/Rust-2024-orange.svg[Rust Version]
+image:https://img.shields.io/badge/License-MIT-blue.svg[License]
+
+[cols="2,10",frame=none]
+|===
+|image:logo-128.png[logo] 
+a|An implementation of the **Model Context Protocol (MCP)** that allows AI agents to perform web searches and extract web content. Built with Rust for speed, reliability & minimal footprint.
+
+Unlike standard MCP servers using `stdio`, this bridge operates over the network:
+
+* **SSE (Server-Sent Events)** with a **Hybrid Response** mode, making it compatible with clients like LM Studio.
+* **/mpc POST**, making it compatible with clients like open WebUI.
+|===
+
+toc::[]
+
+NOTE: This project is a **gateway only** and does **not** include https://docs.searxng.org/[SearXNG]. You must deploy and configure your own https://docs.searxng.org/[SearXNG] instance separately.
+
+== Features
+
+* **Dual Tools**: 
+** `search`: High-speed web search via SearXNG.
+** `fetch_page`: Smart content extraction (HTML to Markdown) with boilerplate removal.
+* **Network-Ready**: Connect via SSE/HTTP; no local child-process management required.
+* **LM Studio Optimized**: Specialized "Hybrid Handshake" to prevent connection timeouts.
+* **Modern Rust**: Leveraging Edition 2024 and the Axum/Tokio ecosystem.
+* **Docker Optimized**: Multi-stage builds and image `FROM scratch` for a tiny footprint (~5MB).
+
+== Tools
+
+The bridge exposes two primary tools to the AI:
+
+[cols="1,3"]
+|===
+| Tool | Description
+
+| `search`
+| Performs a query on SearXNG and returns titles, snippets, and URLs.
+
+| `fetch_page`
+| Downloads a specific URL, extracts the main content (article/body), and converts it to clean Markdown.
+|===
+
+== Deployment Options
+
+=== Using the DockerHub Image (Fastest)
+[source,bash]
+----
+docker run -d \
+  --name mcp-searxng-bridge \
+  -p 3000:3000 \
+  -e MCP_SX_URL="http://your-searxng-ip:18080" \
+  -e MCP_SX_PORT="3000" 
+  -e MCP_SX_LOG="info" 
+  davidburet/mcp-searxng-bridge:0.4.0
+----
+
+=== Building with Docker (Local)
+[source,console]
+----
+docker build -t mcp-searxng-bridge .
+docker run -d -p 3000:3000 -e MCP_SX_URL="http://172.17.0.1:18080" mcp-searxng-bridge
+----
+
+=== Native Binary Build
+Requires Rust 1.85+ (Edition 2024).
+[source,console]
+----
+cargo build --release
+export MCP_SX_URL="http://localhost:18080"
+./target/release/mcp-searxng-rs
+----
+
+== Configuration
+
+Environment variables (prefixed with `MCP_SX_`):
+
+[cols="1,2,1"]
+|===
+| Variable | Description | Default
+
+| `MCP_SX_URL`
+| URL of your SearXNG instance
+| `http://172.17.0.1:18080`
+
+| `MCP_SX_PORT`
+| Port the bridge will listen on
+| `3000`
+
+| `MCP_SX_LOG`
+| Log level (`debug`, `info`, `warn`, `error`)
+| `info`
+|===
+
+== Connecting to LM Studio 
+
+Tested with https://lmstudio.ai[LMStudio] version 0.4.2+.
+
+To integrate the bridge, edit your `mcp.json` configuration file:
+
+* **Location**:
+** Windows: `%APPDATA%\LM Studio\mcp.json`
+** macOS: `~/Library/Application Support/LM Studio/mcp.json`
+** Linux: `~/.config/lmstudio/mcp.json`
+
+* **Configuration**:
+[source,json]
+----
+{
+  "mcpServers": {
+    "searxng-suite": {
+      "url": "http://YOUR_BRIDGE_IP:3000/sse"
+    }
+  }
+}
+----
+
+via HTTP POST to avoid the 60s timeout often encountered with LM Studio's SSE implementation._
+
+== Known Limitations
+
+* **Broadcast Channel**: Currently, responses are broadcasted to all active SSE subscribers. Ideal for private/single-user use.
+* **Security**: No built-in Auth. Keep it behind a VPN or trusted network.
+* **Scraping**: `fetch_page` does not execute JavaScript (uses a static HTML scraper).
+
+== License
+
+MIT License. See `LICENSE` for details. **Note:** Mentioning the author in credits is required for any redistribution.
+
+== AI assistance disclosure
+
+This project includes AI-assisted code and documentation.
+The maintainer reviews and tests changes, however the software is provided "as is" and may contain errors.
+Use at your own risk; validate in your environment before production use.
+
+---
+Created by DBuret. Part of the https://gitlab.com/dburet/pAItrimony[pAItrimony] services suite.
