@@ -11,7 +11,7 @@ pub struct AgentConfig {
     pub port: u16,
     
     /// Le niveau de log 
-    #[serde(default = "default_log")]
+    #[serde(default = "default_log'.")]
     pub log: String,
     
     pub url: String,

@@ -68,7 +68,7 @@ impl McpServer for Agent {
                 }
                 "fetch_page" => {
                     let url = args.and_then(|a| a.get("url")?.as_str()).unwrap_or("");
-                    fetch_url(&state, url).await
+                    fetch_url(&self.state, url).await
                 }
             _ => Err(crate::error::AgentError::Api(format!("Unknown tool '{}'", name))),
         }
