@@ -19,3 +19,11 @@ thiserror.workspace = true
 #tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 html2md = "0.2" 
 scraper = "0.19" 
+
+axum = { version = "0.7", features = ["macros"] }
+tokio = { version = "1", features = ["full"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+reqwest = { version = "0.11", default-features = false, features = ["json", "rustls-tls"] }
+futures = "0.3"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tower-http = { version = "0.5", features = ["trace"] }
