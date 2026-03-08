@@ -17,3 +17,11 @@ tokio.workspace = true
 thiserror.workspace = true
 
 # TO DO: Dépendances métier
+axum = { version = "0.8", features = ["macros"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+flate2 = "1.0"
+base64 = "0.22"
+futures-util = "0.3"
+tracing-subscriber = { version = "0.3", features = ["chrono", "env-filter"] }
+chrono = "0.4"
+url = "2"

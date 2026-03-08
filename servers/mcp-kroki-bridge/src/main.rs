@@ -11,9 +11,10 @@ use std::sync::Arc;
 use tokio::sync::broadcast;
 use tracing::{info,error};
 
+
 use crate::config::AgentConfig;
 //use crate::error::AgentError;
-use crate::handlers::{call_searxng, fetch_url};
+use crate::handlers::{generate_url};
 use crate::state::AppState;
 
 /// Agent générique qui implémente le protocole MCP

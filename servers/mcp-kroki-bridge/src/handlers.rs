@@ -1,8 +1,5 @@
 use crate::state::AppState;
 use crate::error::AgentError;
-
-
-
 use base64::{Engine as _, engine::general_purpose::URL_SAFE};
 use flate2::Compression;
 use flate2::write::ZlibEncoder;
