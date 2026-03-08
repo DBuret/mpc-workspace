@@ -4,12 +4,14 @@ mod config;
 mod error;
 mod handlers;
 mod state;
+use mcp_network_core::McpResponse;
 
 use mcp_network_core::{McpServer, create_mcp_router};
 use serde_json::{Value, json};
 use std::sync::Arc;
 use tokio::sync::broadcast;
 use tracing::{info,warn, error};
+use axum::Json; .
 
 
 use crate::config::AgentConfig;
@@ -74,9 +76,9 @@ impl McpServer for Agent {
             .and_then(|v| v.as_str())
             .unwrap_or("");
 
-        info!("tools/call: tool={}, source_len={}", tool_name, source.len());
+        info!("tools/call: tool={}, source_len={}", name, source.len());
 
-        let kroki_type = match tool_name {
+        let kroki_type = match name {
             "render_plantuml" => "plantuml",
             "render_vega" => "vegalite",
             _ => return Err(format!("Unknown tool '{}'", name))
@@ -91,7 +93,7 @@ impl McpServer for Agent {
         }
 
         // Generate Kroki URL
-        let url = generate_url(&state.kroki_url, kroki_type, source);
+        let url = generate_url(state.url, kroki_type, source);
         let result = json!({
             "content": [{
                 "type": "text",
