@@ -75,7 +75,7 @@ ENTRYPOINT ["./mcp-bridge"]
 # ==========================================
 # STAGE 4x : AGENT TEMPLATE / NOUVEL AGENT
 # ==========================================
-#FROM base-runtime AS 
+#FROM base-runtime AS mcp-template
 #
 # COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/mcp-searxng-bridge /app/mcp-bridge
 #

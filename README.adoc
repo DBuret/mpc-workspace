@@ -61,12 +61,7 @@ toc::[]
 . build
 
 [source,console]
-docker buildx build \
-  --build-arg MCP_AGENT_NAME=mcp-new \
-  -t dburet/mcp-new:latest \
-  --platform linux/amd64,linux/arm64 \
-  --push .
-
+docker buildx build   --target mcp-searxng-bridge   -t davidburet/mcp-searxng-bridge:latest   --platform linux/amd64   --push .
 
 == License
 
