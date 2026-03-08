@@ -7,10 +7,11 @@ use tokio::sync::broadcast;
 pub struct AppState {
     // TO DO: Ajoutez vos clients métier ici (ex: reqwest::Client, sqlx::PgPool)
     pub client: reqwest::Client,
+    pub url: String,
     
     // Requis par le noyau réseau pour le mode SSE
     pub tx: broadcast::Sender<String>,
-    pub url: String;
+    
 }
 
 impl AppState {
