@@ -1,0 +1,25 @@
+[workspace]
+resolver = "2"
+members = [
+    "core/mcp-network-core",
+    "servers/mcp-searxng-bridge",
+    # Ajoutez ici d'autres agents futurs :
+    # "servers/mcp-database-bridge",
+    # "servers/mcp-filesystem-bridge",
+]
+
+# Dépendances partagées par tous les membres du workspace
+[workspace.dependencies]
+axum = { version = "0.7", features = ["macros"] }
+tokio = { version = "1", features = ["full"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "0.11", default-features = false, features = ["json", "rustls-tls"] }
+futures = "0.3"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tower-http = { version = "0.5", features = ["trace"] }
+thiserror = "1.0"
+envy = "0.4"
+dotenvy = "0.15"

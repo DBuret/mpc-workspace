@@ -1,0 +1,13 @@
+Comment l’utiliser pour un nouveau projet ?
+
+cp -r servers/template servers/mcp-mon-agent
+cd servers/mcp-mon-agent
+sed -i 's/template-bridge/mon-agent/g' Cargo.toml
+
+# Éditez seulement config.rs et handlers.rs
+# Ajoutez dans workspace Cargo.toml
+
+
+cargo build --release
+
+
