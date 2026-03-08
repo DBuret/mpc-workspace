@@ -78,8 +78,7 @@ impl McpServer for Agent {
         let kroki_type = match tool_name {
             "render_plantuml" => "plantuml",
             "render_vega" => "vegalite",
-            "render_mermaid" => "mermaid",
-            _ => "mermaid",
+            _ => return Err(format!("Unknown tool '{}'", name))
         };
 
         // Vega-Lite validation
@@ -101,9 +100,6 @@ impl McpServer for Agent {
 
 	return Json(McpResponse { jsonrpc: "2.0".into(), id: request_id, result }).into_response()
     }
-
-    // Default error for unsupported methods
-    Err(format!("Unknown tool '{}'", name)),
     
 }
 
