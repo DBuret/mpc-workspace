@@ -9,7 +9,7 @@ use mcp_network_core::{McpServer, create_mcp_router};
 use serde_json::{Value, json};
 use std::sync::Arc;
 use tokio::sync::broadcast;
-use tracing::{info,error};
+use tracing::{info,warn, error};
 
 
 use crate::config::AgentConfig;
@@ -91,7 +91,7 @@ impl McpServer for Agent {
         }
 
         // Generate Kroki URL
-        let url = kroki::generate_url(&state.kroki_url, kroki_type, source);
+        let url = generate_url(&state.kroki_url, kroki_type, source);
         let result = json!({
             "content": [{
                 "type": "text",

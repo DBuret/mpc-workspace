@@ -1,4 +1,6 @@
 use thiserror::Error;
+use axum::http::StatusCode;
+use axum::response::{IntoResponse, Response};
 
 /// TODO: Définissez ici les erreurs métiers propres à cet agent.
 /// Elles seront converties en messages d'erreur formatés pour l'IA.
