@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Cache des dépendances (optionnel mais recommandé pour la vitesse)
-COPY Cargo.toml Cargo.lock ./
+COPY Cargo.toml Cargo.loc[k] ./
 # On crée des fichiers dummy pour tromper Cargo et mettre en cache les dépendances
 RUN mkdir -p core/mcp-network-core/src servers/mcp-searxng-bridge/src servers/template/src \
     && echo "fn main() {}" > core/mcp-network-core/src/lib.rs \
