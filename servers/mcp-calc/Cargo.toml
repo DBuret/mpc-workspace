@@ -1,0 +1,22 @@
+[package]
+name = "mcp-calc"     # TO DO: Renommer
+version = "1.0.2"                # TO DO: Versionner
+edition = "2024"
+
+[[bin]]
+name = "mcp-calc"     # TO DO: Même nom
+path = "src/main.rs"
+
+[dependencies]
+mcp-network-core = { path = "../../core/mcp-network-core" }
+serde.workspace = true
+serde_json.workspace = true
+envy.workspace = true
+tracing.workspace = true
+tokio.workspace = true
+thiserror.workspace = true
+axum.workspace = true
+
+# TO DO: Dépendances métier
+mathexpr = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
