@@ -11,18 +11,16 @@
 image:https://img.shields.io/badge/Rust-2024-orange.svg[Rust Version]
 image:https://img.shields.io/badge/License-MIT-blue.svg[License]
 
-[cols="2,10",frame=none]
-|===
-|image:logo-128.png[logo] 
-a|An implementation of the *Model Context Protocol (MCP)* for AI agents 
 
-Built with Rust for speed, reliability & minimal footprint.
+An implementation of the *Model Context Protocol (MCP)* for AI agents 
+
+Built with Rust for speed, reliability & minimal footprint ( < 5 Mb ).
 
 Unlike standard MCP servers using `stdio`, these MCP servers operate over the network:
 
 * *SSE (Server-Sent Events)* with a *Hybrid Response* mode, making it compatible with clients like LM Studio.
-* */mpc POST*, modern version o" the protocol, making it compatible with clients like open WebUI, AnythingLLM, ...
-|===
+* */mpc POST*, modern version of the protocol, making it compatible with clients like open WebUI, AnythingLLM, ...
+
 
 toc::[]
 
@@ -33,19 +31,31 @@ toc::[]
 * *Network-Ready*: Connect via SSE/HTTP or MCP Streaming; no local child-process management required.
 * *Workspace Architecture*: Scalable Rust monorepo design allowing multiple independent MCP agents to share the same reliable core networking stack without code duplication. Each mcp server code  focus on its business logic only
 * *Modern Rust*: Leveraging Edition 2024, the Axum/Tokio ecosystem,  strongly-typed environment configurations (envy), and tunable logging level (tracing).
+* *Rusr workspace*: MCP servers share a commmon boilerplate 
 * *Docker Optimized*: Single multi-stage `Dockerfile` to build the entire workspace, resulting in tiny `FROM scratch` images (~5MB).
 
 
 
 == MCP Servers
 
-[cols="1,6"]
+[cols="2,6"]
 |===
 
-| image:logo-128-calc.png[calc MCP] | link:servers/mcp-calc[mcp-calc] : A simple calculator using MCP to avoid LLM mistakes at basic arithmetic operations.
-| image:logo-128-kroki.png[kroki MCP] | link:servers/mcp-kroki-bridge[mcp-kroki-bridge] : A bridge to use Kroki
-| image:logo-128-pg.png[postgres MCP] | link:servers/mcp-postgres[mcp-postgres] : A bridge to use Postgres in my pAItrimony project
-| image:logo-128-search.png[search MCP] | link:servers/mcp-searxng-bridge[mcp-searxng-bridge] : A bridge to use searxng search engine & fetch web pages
+| image:logo-128-calc.png[calc MCP]  image:https://img.shields.io/docker/v/davidburet/mcp-calc[Version]
+image:https://img.shields.io/docker/image-size/davidburet/mcp-calc/latest[Size]
+| link:servers/mcp-calc[mcp-calc] : A simple calculator using MCP to avoid LLM mistakes at basic arithmetic operations.
+
+| image:logo-128-kroki.png[kroki MCP] image:https://img.shields.io/docker/v/davidburet/mcp-kroki-bridge[Version]
+image:https://img.shields.io/docker/image-size/davidburet/mcp-kroki-bridge/latest[Size]
+| link:servers/mcp-kroki-bridge[mcp-kroki-bridge] : A bridge to use Kroki 
+
+| image:logo-128-pg.png[postgres MCP] image:https://img.shields.io/docker/v/davidburet/mcp-pg-paitrimony[Version]
+image:https://img.shields.io/docker/image-size/davidburet/mcp-pg-paitrimony/1.0.2[Size]
+| link:servers/mcp-pg-paitrimony[mcp-pg-paitrimony] : A bridge to use Postgres in my pAItrimony project 
+
+| image:logo-128-search.png[search MCP]  image:https://img.shields.io/docker/v/davidburet/mcp-searxng-bridge[Version]
+image:https://img.shields.io/docker/image-size/davidburet/mcp-searxng-bridge/latest[Size]
+| link:servers/mcp-searxng-bridge[mcp-searxng-bridge] : A bridge to use searxng search engine & fetch web pages 
 
 |===
 
@@ -68,8 +78,8 @@ toc::[]
 
 [source,console]
 docker buildx build  \
-    --target mcp-searxng-bridge \
-    -t davidburet/mcp-searxng-bridge:latest \
+    --target mcp-new \
+    -t mcp-new:latest \
     --platform linux/amd64 \
     --push \
     .
