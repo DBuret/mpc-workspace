@@ -5,7 +5,8 @@ members = [
     "servers/mcp-searxng-bridge",
     "servers/mcp-kroki-bridge",
     # Ajoutez ici d'autres agents futurs :
-    # "servers/mcp-database-bridge",
+    "servers/mcp-calc",
+    "servers/mcp-pg-paitrimony",
     # "servers/mcp-filesystem-bridge",
 ]
 

@@ -7,9 +7,9 @@ docker buildx build \
 
 # Build pour un futur agent (ex: mcp-database-bridge)
 docker buildx build \
-  --build-arg MCP_AGENT_NAME=mcp-database-bridge \
-  -t mcp-database-bridge:latest \
-  --platform linux/amd64,linux/arm64 \
+  --build-arg MCP_AGENT_NAME=mcp-calc \
+  -t davidburet/mcp-calc:latest \
+  --platform linux/amd64 \
   .
 
 # Build multi-architectures simultanément

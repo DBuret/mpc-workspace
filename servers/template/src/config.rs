@@ -11,7 +11,7 @@ pub struct AgentConfig {
     
     // TO DO: edit your env vars
     
-    /// Exemple : MCP_TPL_API_KEY
+    // Exemple : MCP_TPL_API_KEY
     // pub mcp_tpl_api_key: String,
     
     // Une variable optionnelle (ex: MCP_TEMPLATE_BRIDGE_API_KEY)

@@ -2,7 +2,7 @@
 # STAGE 1 : CARGO CHEF (Préparation du cache)
 # ==========================================
 # On utilise une image avec cargo-chef préinstallé
-FROM lukemathwalker/cargo-chef:latest-rust-1.85 AS chef
+FROM lukemathwalker/cargo-chef:latest-rust-1.88 AS chef
 WORKDIR /app
 
 # On analyse l'ensemble du projet pour créer une "recette"
@@ -91,6 +91,49 @@ ENV MCP_KROKI_BRIDGE_LOG="debug"
 
 EXPOSE 3000
 ENTRYPOINT ["./mcp-bridge"]
+
+# ==========================================
+# STAGE 4c : mcp-calc
+# ==========================================
+FROM base-runtime AS mcp-calc
+
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/mcp-calc /app/mcp-bridge
+
+# Labels OCI spécifiques à SearXNG
+LABEL org.opencontainers.image.title="MCP Calc"
+LABEL org.opencontainers.image.description="High-performance MCP server for arithmetic expression evaluation. Offloads arithmetic from LLMs to a deterministic Rust engine."
+LABEL com.paitrimony.mcp.tools="evaluate"
+
+# ENV spécifiques à kroki
+ENV MCP_CALC_PORT="3000"
+ENV MCP_CALC_LOG="debug"
+
+EXPOSE 3000
+ENTRYPOINT ["./mcp-bridge"]
+
+
+# ==========================================
+# STAGE 4d : mcp-mcp-pg-paitrimony
+# ==========================================
+FROM base-runtime AS mcp-pg-paitrimony
+
+COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/mcp-pg-paitrimony /app/mcp-bridge
+
+# Labels OCI spécifiques à SearXNG
+LABEL org.opencontainers.image.title="mcp-pg-paitrimony"
+LABEL org.opencontainers.image.description="MCP bridge to pAItrimony DB"
+LABEL com.paitrimony.mcp.tools="sql_read_query, list_tables, describe_table,portfolio_performance, at_risk_positions, sector_exposure"
+
+# ENV spécifiques à kroki
+ENV MCP_CALC_PORT="3000"
+ENV MCP_CALC_LOG="debug"
+
+EXPOSE 3000
+ENTRYPOINT ["./mcp-bridge"]
+
+
+
+
 
 
 # ==========================================

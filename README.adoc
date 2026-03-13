@@ -54,7 +54,13 @@ toc::[]
 . cp -r servers/template servers/mcp-new
 . cd servers/mcp-new
 . sed -i 's/template-bridge/mpc-new/g' Cargo.toml
-. Edit config.rs (env vars),  handlers.rs (mcp tools), and Cargo.toml (additionnal crates needed by your business logic) 
+. Edit:
+** config.rs (env vars)
+** handlers.rs (mcp tools)
+** main.rs 
+*** function list_tools: your tools definitions
+*** function call_tools: call of your business functions (in handlers.rs) 
+** Cargo.toml (additionnal crates needed by your business logic) 
 . add to workspace in root Cargo.toml
 . Dokerfile : add section for the new server (cut'n paste template section, edit)
 . cargo check
