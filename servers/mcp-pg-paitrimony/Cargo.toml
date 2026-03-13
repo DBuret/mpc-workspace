@@ -1,6 +1,6 @@
 [package]
 name = "mcp-pg-paitrimony"     # TO DO: Renommer
-version = "1.0.0"                # TO DO: Versionner
+version = "1.0.2"                # TO DO: Versionner
 edition = "2024"
 
 [[bin]]

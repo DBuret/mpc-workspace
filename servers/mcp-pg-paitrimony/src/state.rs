@@ -26,9 +26,9 @@ impl AppState {
         //
         // let client = ...
         // let url = ...
-let prefix = "MCP_PG";
-        let database_url = env::var(format!("{}_DATABASE_URL", prefix))
-            .unwrap_or_else(|_| "postgresql://postgres:postgres@192.168.1.49:5432/paitrimony".into());
+
+                
+        let database_url = config.database_url.clone();
 
         info!("Connecting to PostgreSQL...");
         let pool = PgPool::connect(&database_url)
