@@ -1,0 +1,25 @@
+[package]
+name = "mcp-pg-paitrimony"     # TO DO: Renommer
+version = "1.0.0"                # TO DO: Versionner
+edition = "2024"
+
+[[bin]]
+name = "mcp-pg-paitrimony"     # TO DO: Même nom
+path = "src/main.rs"
+
+[dependencies]
+mcp-network-core = { path = "../../core/mcp-network-core" }
+serde.workspace = true
+serde_json.workspace = true
+envy.workspace = true
+tracing.workspace = true
+tokio.workspace = true
+thiserror.workspace = true
+
+# TO DO: Dépendances métier
+axum = { version = "0.7", features = ["macros"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+sqlx = { version = "0.8", default-features = false, features = ["postgres", "runtime-tokio-rustls", "json"] }
+futures = "0.3"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tower-http = { version = "0.5", features = ["trace"] }
