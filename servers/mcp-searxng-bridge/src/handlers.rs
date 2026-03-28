@@ -1,111 +1,134 @@
 use crate::error::AgentError;
 use crate::state::AppState;
-//use std::sync::Arc;
 
 use html2md::parse_html;
-use scraper::{Html, Selector};
-//use std::time::Instant;
+use readability::extractor;
 use tracing::{debug, error, info, instrument, warn};
 
 #[instrument(skip(state), fields(query = %query))]
 pub async fn call_searxng(state: &AppState, query: &str) -> Result<String, AgentError> {
-    if query.is_empty() {
-        warn!("Requête de recherche vide reçue");
-        return Ok("Query is empty".into());
+if query.is_empty() {
+warn!("Requête de recherche vide reçue");
+return Ok("Query is empty".into());
+}
+
+```
+debug!("Envoi de la requête à SearXNG...");
+
+let params = [("q", query), ("format", "json"), ("language", "en-US")];
+
+let resp = state
+    .client
+    .get(&format!("{}/search", state.url))
+    .query(&params)
+    .send()
+    .await
+    .map_err(|e| {
+        error!(error = %e, "Échec de la connexion à SearXNG");
+        e
+    })?;
+
+if !resp.status().is_success() {
+    let status = resp.status();
+    error!(status = %status, "SearXNG a retourné une erreur");
+    return Err(AgentError::Api(format!("SearXNG error: HTTP {}", status)));
+}
+
+let json: serde_json::Value = resp.json().await?;
+let mut out = String::new();
+
+if let Some(results) = json.get("results").and_then(|r| r.as_array()) {
+    for res in results.iter().take(5) {
+        let title = res.get("title").and_then(|t| t.as_str()).unwrap_or("");
+        let content = res.get("content").and_then(|c| c.as_str()).unwrap_or("");
+        let url = res.get("url").and_then(|u| u.as_str()).unwrap_or("");
+        out.push_str(&format!("### {}\n{}\nSource: {}\n\n", title, content, url));
     }
+}
 
-    debug!("Envoi de la requête à SearXNG...");
+Ok(if out.is_empty() {
+    "No results found".into()
+} else {
+    out
+})
+```
 
-    let params = [("q", query), ("format", "json"), ("language", "en-US")];
-
-    let resp = state
-        .client
-        .get(&format!("{}/search", state.url))
-        .query(&params)
-        .send()
-        .await
-        .map_err(|e| {
-            error!(error = %e, "Échec de la connexion à SearXNG");
-            e
-        })?;
-
-    if !resp.status().is_success() {
-        let status = resp.status();
-        error!(status = %status, "SearXNG a retourné une erreur");
-        return Err(AgentError::Api(format!("SearXNG error: HTTP {}", status)));
-    }
-
-    let json: serde_json::Value = resp.json().await?;
-    let mut out = String::new();
-
-    if let Some(results) = json.get("results").and_then(|r| r.as_array()) {
-        for res in results.iter().take(5) {
-            let title = res.get("title").and_then(|t| t.as_str()).unwrap_or("");
-            let content = res.get("content").and_then(|c| c.as_str()).unwrap_or("");
-            let url = res.get("url").and_then(|u| u.as_str()).unwrap_or("");
-            out.push_str(&format!("### {}\n{}\nSource: {}\n\n", title, content, url));
-        }
-    }
-
-    Ok(if out.is_empty() {
-        "No results found".into()
-    } else {
-        out
-    })
 }
 
 #[instrument(skip(state), fields(url = %url))]
 pub async fn fetch_url(state: &AppState, url: &str) -> Result<String, AgentError> {
-    if url.is_empty() {
-        return Ok("URL is empty".into());
-    }
+if url.is_empty() {
+return Ok("URL is empty".into());
+}
 
-    let resp = state.client.get(url).send().await?;
+```
+// ── 1. Fetch ──────────────────────────────────────────────────────────────
+let resp = state.client.get(url).send().await?;
 
-    if !resp.status().is_success() {
-        return Ok(format!(
-            "Impossible de lire la page : Erreur HTTP {}",
-            resp.status()
-        ));
-    }
+if !resp.status().is_success() {
+    return Ok(format!("HTTP error {}: cannot fetch page.", resp.status()));
+}
 
-    let html_content = resp.text().await?;
+// ── 2. Guard: refuse non-HTML content types ───────────────────────────────
+let content_type = resp
+    .headers()
+    .get(reqwest::header::CONTENT_TYPE)
+    .and_then(|v| v.to_str().ok())
+    .unwrap_or("")
+    .to_ascii_lowercase();
 
-    // Parsing et extraction du contenu principal
-    let document = Html::parse_document(&html_content);
+if !content_type.contains("text/html") && !content_type.contains("text/plain") {
+    info!(content_type, "Skipping non-HTML resource");
+    return Ok(format!(
+        "Skipped: unsupported content type `{content_type}`."
+    ));
+}
 
-    // On cible les zones de texte probable pour éviter les menus/footers
-    let selectors = ["article", "main", ".content", "#content", "body"];
-    let mut best_fragment = String::new();
+// ── 3. Read body ──────────────────────────────────────────────────────────
+let html = resp.text().await?;
+debug!(bytes = html.len(), "HTML body received");
 
-    for selector_str in selectors {
-        if let Ok(selector) = Selector::parse(selector_str) {
-            if let Some(element) = document.select(&selector).next() {
-                best_fragment = element.html();
-                if selector_str == "article" || selector_str == "main" {
-                    break;
-                }
-            }
-        }
-    }
+// ── 4. Extract main content via Readability ───────────────────────────────
+let parsed_url = url
+    .parse()
+    .map_err(|_| AgentError::Api(format!("Invalid URL: {url}")))?;
 
-    // Conversion en Markdown
-    let markdown = if !best_fragment.is_empty() {
-        parse_html(&best_fragment)
-    } else {
-        parse_html(&html_content)
-    };
+let product = extractor::extract(&mut html.as_bytes(), &parsed_url)
+    .map_err(|e| AgentError::Api(format!("Readability error: {e}")))?;
 
-    let cleaned = markdown.trim();
+if product.content.is_empty() {
+    return Ok("Page loaded but no text content could be extracted.".into());
+}
 
-    Ok(if cleaned.is_empty() {
-        "La page a été chargée mais aucun contenu textuel n'a pu être extrait.".into()
-    } else if cleaned.len() > 15000 {
-        format!(
-            "{}...\n\n(Contenu tronqué car trop long)",
-            &cleaned[..15000]
-        )
-    } else {
-        cleaned.to_string()
-    })
+// ── 5. Convert cleaned HTML → Markdown ───────────────────────────────────
+let markdown = parse_html(&product.content);
+let markdown = markdown.trim();
+
+Ok(truncate_at_word(markdown, 12_000))
+```
+
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Truncate at the last word boundary before `max_chars`, appending a notice.
+fn truncate_at_word(text: &str, max_chars: usize) -> String {
+if text.len() <= max_chars {
+return text.to_string();
+}
+
+```
+let boundary = text[..max_chars]
+    .rfind(|c: char| c.is_whitespace())
+    .unwrap_or(max_chars);
+
+format!(
+    "{}\n\n*(Content truncated at {} chars)*",
+    text[..boundary].trim(),
+    max_chars
+)
+```
+
 }
